@@ -57,16 +57,19 @@ researchers$researchers <- researchers$population/10^6 * researchers$mean
 
 # * Number of collections per country ---------------------------------------
 colls <- unique(dat[,c("collection_no", "code")])
+total_colls <- length(unique(dat$collection_no))
 
-colls_n <- data.frame(prop.table(table(colls$code)), stringsAsFactors = FALSE)
+colls_n <- data.frame(table(colls$code), stringsAsFactors = FALSE)
 colnames(colls_n) <- c("code", "freq")
+colls_n$freq <- colls_n$freq/total_colls
+
 colls_n$imperial <- 0
 colls_n$imperial[colls_n$code %in% imperialism$code] <- 1
 colls_n <- colls_n[order(colls_n$freq, decreasing = TRUE),]
 
-n <- which(cumsum(colls_n$freq) > 0.8)[1]
+#n <- which(cumsum(colls_n$freq) > 0.8)[1]
 
-topcountries <- colls_n[1:n,]
+topcountries <- colls_n[1:15,]
 sum(topcountries$freq)
 topcountries$country <- countrycode(topcountries$code, origin = "iso3c", destination = "country.name")
 
@@ -76,7 +79,7 @@ dat2 <- unique(dat2[,c("collection_no", "code")])
 
 colls_n2 <- data.frame(table(dat2$code), stringsAsFactors = FALSE)
 colnames(colls_n2) <- c("code", "foreign")
-colls_n2$foreign <- colls_n2$foreign/nrow(colls)
+colls_n2$foreign <- colls_n2$foreign/total_colls
 
 colls_foreign <-colls_n2[colls_n2$code %in% topcountries$code,]
 
@@ -92,7 +95,7 @@ dat3 <- colls[colls$collection_no %in% names(which(local_sum == 0)),]
 
 colls_n3 <- data.frame(table(dat3$code), stringsAsFactors = FALSE)
 colnames(colls_n3) <- c("code", "parachute")
-colls_n3$parachute <- colls_n3$parachute/nrow(colls)
+colls_n3$parachute <- colls_n3$parachute/total_colls
 
 colls_parachute <-colls_n3[colls_n3$code %in% topcountries$code,]
 
@@ -103,7 +106,7 @@ topcountries <- merge(topcountries, colls_parachute)
 topcountries$local <- topcountries$freq - topcountries$foreign
 topcountries$foreign <- topcountries$foreign - topcountries$parachute
 
-topcountries <- topcountries %>%  select(local, foreign, parachute, country) %>% 
+topcountries <- topcountries %>%  select(local, foreign, parachute, country, imperial) %>% 
 	pivot_longer(cols=c("local", "foreign", "parachute"), names_to = c("type"), values_to="freq")
 
 topcountries$type <- factor(topcountries$type, levels=c("local", "foreign", "parachute"))
