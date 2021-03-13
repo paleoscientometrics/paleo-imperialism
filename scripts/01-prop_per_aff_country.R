@@ -15,17 +15,13 @@ load(file.path("data", "refs.RData"))
 pbdb <- readRDS(file.path("data", "pbdb.rds"))
 dat <- completed_refs
 
-#other data
-income <- read.csv(file.path("data", "2019_income_classification_worldbank.csv"))
-gdp <- read.csv(file.path("data", "2020-05-28_GDP_WorldBank.csv"))
-research_fund <- read.csv(file.path("data", "2020-05-28_RD_WorldBank.csv"))
-researchers <- read.csv(file.path("data", "2021-02-06_researchers_WorldBank.csv"), skip=4)
-population <-read.csv(file.path("data", "2021-03-13_population_worldbank.csv"), skip=4)
-gpi <- read.csv(file.path("data","2019_GPI.csv"), sep = ",") #Global Peace Index 
-epi <- read.csv(file.path("data","2019_EPI.csv"), sep = ",") # english proficiency 
 imperialism <- readxl::read_xls("data/imperialism.xls", sheet=4)
 
 dat$code <- countrycode::countrycode(dat$aff_country, origin="country.name", destination = "iso3c")
+dat$code2 <- countrycode::countrycode(dat$samp_country, origin="country.name", destination = "iso3c")
+dat[is.na(dat$code2) & !dat$samp_country %in% c("", "ODP Site"),]$code2 <- "CUW"
+dat <- dat[!is.na(dat$code2),]
+
 imperialism$code <- countrycode::countrycode(imperialism$country, origin="country.name", destination = "iso3c")
 
 dat <- merge(dat, pbdb[,c("reference_no", "collection_no")], all.x=TRUE, all.y=FALSE)
@@ -74,7 +70,7 @@ sum(topcountries$freq)
 topcountries$country <- countrycode(topcountries$code, origin = "iso3c", destination = "country.name")
 
 # * In foreign country ----------------------------------------------------
-dat2 <- dat[dat$samp_country != dat$aff_country,]
+dat2 <- dat[dat$code != dat$code2,]
 dat2 <- unique(dat2[,c("collection_no", "code")])
 
 colls_n2 <- data.frame(table(dat2$code), stringsAsFactors = FALSE)
@@ -87,7 +83,7 @@ topcountries <- merge(topcountries, colls_foreign)
 
 # * Does not include any local researcher ---------------------------------
 dat$local <- 1
-dat$local[dat$samp_country != dat$aff_country] <- 0
+dat$local[dat$code != dat$code2] <- 0
 dat3 <- dat[!duplicated(dat[,c("code", "collection_no")]),]
 
 local_sum <- tapply(dat3$local, dat3$collection_no, sum)
