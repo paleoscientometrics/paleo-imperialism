@@ -109,7 +109,7 @@ topcountries$type <- factor(topcountries$type, levels=c("local", "foreign", "par
 
 ggplot(topcountries, aes(x=reorder(country, freq), y=freq*100, fill=type)) +
 	geom_bar(stat="identity") +
-	labs(x="", y="Proportion of fossil collections", fill="Fieldwork")+
+	labs(x="", y=" % contribution to fossil collections", fill="Fieldwork")+
 	scale_fill_manual(values=pal[c(3:5)], 
 					  labels=c("In same country", "In a foreign country", "In a foreign country \nw/o local collaboration")) +
 	coord_flip() +
