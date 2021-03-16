@@ -67,4 +67,18 @@ completed_refs$aff_country <- plyr::mapvalues(completed_refs$aff_country,
 
 completed_refs$aff_country[completed_refs$reference_no=="74387"] <- c("Argentina", "Peru","France")
 
+
+temp <- completed_refs
+temp <- temp[!temp$samp_country %in% c("", "ODP Site"),]
+n <- grep("Cura.+", temp$samp_country)
+temp$samp_country[n] <- "Curacao"
+
+temp$samp_code <- countrycode::countrycode(temp$samp_country, origin="country.name", destination="iso3c")
+temp$aff_code <- countrycode::countrycode(temp$aff_country, origin="country.name", destination="iso3c")
+
+temp$aff_country <- countrycode::countrycode(temp$aff_code, origin = "iso3c", destination = "country.name")
+temp$samp_country <- countrycode::countrycode(temp$samp_code, origin = "iso3c", destination = "country.name")
+
+completed_refs <- temp
+
 save(all_refs, completed_refs, file="data/refs.RData")
