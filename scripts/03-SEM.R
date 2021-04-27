@@ -1,6 +1,9 @@
 library(tidyverse)
 library(countrycode)
 library(piecewiseSEM)
+library(DiagrammeR)
+library(DiagrammeRsvg)
+library(rsvg)
 
 # Load data ---------------------------------------------------------------
 load(file.path("data", "refs.RData"))
@@ -79,13 +82,21 @@ mod.fin <- step(mod.fin)
 mod.gdp <- lm(gdp ~ hdi + gpi + epi + imperialism, df)
 mod.gdp <- step(mod.gdp)
 
-mod.research <- lm(research ~ gdp + epi + hdi + gpi + imperialism, df)
+mod.research <- lm(research ~ gdp + epi + imperialism, df)
 mod.research <- step(mod.research)
 
 # * SEM -------------------------------------------------------------------
-model.list <- list(mod.fin, mod.gdp, mod.research)
+model.list <- list(mod.fin, mod.research)
 
 res <- as.psem(model.list)
 summary(res)
 
-plot(res)
+res2 <- update(res, mod.gdp)
+
+AIC(res, res2)
+
+res_summ <- summary(res)
+pres <-plot(res)
+
+pres %>% 
+	export_svg %>% charToRaw %>% rsvg_svg("figs/sem.svg")
