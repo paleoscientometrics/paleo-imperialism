@@ -38,8 +38,6 @@ head(regions)
 
 # Create edge list --------------------------------------------------------
 
-# Create edge list --------------------------------------------------------
-
 edges <- df %>%  
 	group_by(samp_country, aff_country) %>% 
 	summarise(weight = n()) %>% 
@@ -93,7 +91,7 @@ for(i in 1:length(regs)){
 	df2[df2$region == regs[i],]$x <- jitter(rep(x_mid[i], nrow(temp)), factor=f[i])
 }
 
-df2[df2$label=="USA",]$y <-  24
+df2[df2$label=="United States",]$y <-  24
 df2[df2$label=="China",]$y <- 22
 df2[df2$label=="Germany",]$y <- 22.8
 
@@ -108,7 +106,7 @@ p.breaks <- df2 %>% group_by(region) %>%
 	arrange(x)
 
 
-edges2$region[edges2$weight < 16] <- "Other"
+edges2$region[edges2$weight < 26] <- "Other"
 
 edges2$region <- factor(edges2$region,levels=c(regs, "Other"))
 df2$weight_alpha <- df2$weight
@@ -119,6 +117,13 @@ alpha = 0.2
 breaks <- c(50,100,500,1000,
 			2000, 5000, 10000)
 lab_size <- 4
+
+palv <- viridis::viridis(5)
+names(palv) <- c("Europe", "Americas", "Oceania", "Asia", "Africa")
+palv["Europe"] <- "#75428f"
+palv["Americas"] <- "#365091"
+palv["Africa"] <- "#fdaa25"
+palv["Asia"] <- "#027218"
 
 p1 <- ggplot() + geom_curve(data=na.omit(edges2[edges2$x2 > edges2$x1,]), 
 							aes(x=x1, y=y1, xend=x2, yend=y2, col=region
@@ -142,14 +147,10 @@ p1 <- ggplot() + geom_curve(data=na.omit(edges2[edges2$x2 > edges2$x1,]),
 	scale_x_continuous(breaks=p.breaks$x, limits=c(0,6)) +
 	scale_size_continuous(breaks=breaks, 
 						  range=c(1,15)) +
-	scale_color_manual(values=c("Other"="#e5e5e5", 
-								"Africa" = "#00798c", 
-								"Oceania"="#d1495b", 
-								"Asia"="#edae49", 
-								"Europe"="#66a182", 
-								"Americas"="#2e4057")) +
+	scale_color_manual(values=c("Other"="#e5e5e560", 
+								palv)) +
 	scale_alpha_continuous(breaks=c(0, 50,100,200,500, 1000,2000, 9999), 
-								range=c(0.1,1)) +
+								range=c(0.3,1)) +
 	guides(alpha="none") +
 	labs(col="Region", size="Number of \noutgoing nodes")
 
@@ -165,6 +166,81 @@ p2 <- p1 + theme_void() +
 ggsave(file.path("figs", "Fig_02_network_global.svg"), p2, width=15, h=10)
 
 
-# Parachute science -------------------------------------------------------
+# Igraph: statistics ------------------------------------------------------
+gr <- df[,c("aff_code", "samp_code")]
+gr <- gr[gr$aff_code != gr$samp_code,] # remove self nodes
+gr <- graph_from_data_frame(gr, directed = T)
 
+gr$degree <- igraph::degree(gr) # the degree of a node in a network is the number of connections it has to other nodes and the degree distribution is the probability distribution of these degrees over the whole network. 
+gr$betweenness <- igraph::betweenness(gr) # detecting the amount of influence a node has over the flow of information in a graph. 
+gr$closeness <- igraph::closeness(gr) #the more central a node is, the closer it is to all other nodes. 
+
+
+# Parachute science -------------------------------------------------------
+df3 <- df
+df3 <- df3[!df3$samp_country == "Antarctica",]
+
+df3$foreign <- 1
+
+#references with at least one local researcher is 0
+df3$foreign[df3$samp_country == df3$aff_country] <- 0
+df3$foreign[df3$reference_no %in% df3$reference_no[df3$foreign==0]] <- 0
+
+ref_foreign <- tapply(df3$foreign, df3$reference_no, sum)
+ref_foreign  <- ref_foreign[ref_foreign > 0]
+
+parachuters <- df3[df3$reference_no %in% names(ref_foreign),]
+parachuters <- unique(parachuters[,c("reference_no", "samp_country")])
+
+outgoing <- table(parachuters$samp_country)
+
+ref_local <- tapply(df3$foreign, df3$reference_no, sum)
+ref_local <- ref_local[ref_local==0]
+
+locals <- df3[df3$reference_no %in% names(ref_local),]
+locals <- unique(locals[,c("reference_no", "samp_country")])
+
+locals <- table(locals$samp_country)
+
+outgoing <- as.data.frame(outgoing)
+colnames(outgoing) <- c("country", "outgoing")
+
+locals <- as.data.frame(locals)
+colnames(locals) <- c("country", "local")
+
+refs_countries <- locals %>% 
+	left_join(outgoing) 
+
+refs_countries[is.na(refs_countries)] <- 0
+
+refs_countries$prop <- refs_countries$local/refs_countries$outgoing
+refs_countries$index <- log(refs_countries$prop)
+
+refs_countries$code <- countrycode::countrycode(refs_countries$country, origin="country.name", destination="iso3c")
+
+#
+
+# Plot --------------------------------------------------------------------
+
+world <- map_data("world")
+world$code <- countrycode::countrycode(world$region, origin="country.name", destination="iso3c")
+
+world <- world %>% left_join(refs_countries %>% select(code, index))
+
+region.lab.data <- world %>%
+	group_by(region) %>%
+	summarise(long = mean(long), lat = mean(lat))
+
+world$col <- ifelse(world$index >= 0, "high", "low")
+
+x11(w=10,h=6)
+ggplot(world, aes(x=long, y=lat)) +
+	geom_polygon(aes(group=group, fill=index), col="white") +
+	scale_fill_gradient(low=pal[1], high=pal[5]) +
+	labs(fill="Parachute \nindex") +
+	theme_void()+
+	theme(legend.position = "bottom") +
+	coord_equal()
+
+ggsave("figs/Fig_03_map_parachute.svg", w=10, h=6)
 
