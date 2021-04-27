@@ -82,6 +82,8 @@ mod.fin <- step(mod.fin)
 mod.gdp <- lm(gdp ~ hdi + gpi + epi + imperialism, df)
 mod.gdp <- step(mod.gdp)
 
+mod.epi <- lm(epi ~ gdp + hdi + research, df) 
+
 mod.research <- lm(research ~ gdp + epi + imperialism, df)
 mod.research <- step(mod.research)
 
@@ -92,11 +94,36 @@ res <- as.psem(model.list)
 summary(res)
 
 res2 <- update(res, mod.gdp)
+res3 <- update(res2, mod.epi)
 
 AIC(res, res2)
+AIC(res2, res3)
 
-res_summ <- summary(res)
-pres <-plot(res)
+coefs_res <-coefs(res)
+plot(res) # to view
 
-pres %>% 
-	export_svg %>% charToRaw %>% rsvg_svg("figs/sem.svg")
+# Plot --------------------------------------------------------------------
+coords <- data.frame(name=c("npubs", "research", "imperialism", "hdi", "gdp", "epi"),
+					 labels =c("Number of\npublications", "Research\nfunding", "Imperialist\nbackground", 
+					 		  "HDI", "GDP", "EEP"),
+					 x=c(2, 2,1,3,1.5,2.5),
+					 y=c(1,2,2,2,3,3))
+
+coefs_res$x1 <- plyr::mapvalues(coefs_res$Predictor, coords$name, coords$x) %>% as.numeric()
+coefs_res$x2 <- plyr::mapvalues(coefs_res$Response, coords$name, coords$x)%>% as.numeric()
+
+coefs_res$y1 <- plyr::mapvalues(coefs_res$Predictor, coords$name, coords$y)%>% as.numeric()
+coefs_res$y2 <- plyr::mapvalues(coefs_res$Response, coords$name, coords$y)%>% as.numeric()
+
+
+ggplot() +
+	geom_segment(data=coefs_res, aes(x=x1, y=y1, xend=x2, yend=y2))+
+	geom_label(data=coords, aes(x=x, y=y, label=labels), 
+			   hjust=0.5, label.r=unit(0.05, "lines"), 
+			   label.padding = unit(0.3, "lines"), size=3) +
+	geom_text(data=coefs_res, aes(x=(x1+x2)/2, y=(y1+y2)/2, 
+								  label=round(Std.Estimate, 2)), size=3) +
+	coord_cartesian(xlim=c(0.5,3.5), ylim=c(0.5, 3.5)) +
+	theme_void()
+
+ggsave(file.path("figs", "Fig_04_model.svg"), w=8, h=6)
