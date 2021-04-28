@@ -1,9 +1,6 @@
 library(tidyverse)
 library(countrycode)
 library(piecewiseSEM)
-library(DiagrammeR)
-library(DiagrammeRsvg)
-library(rsvg)
 
 # Load data ---------------------------------------------------------------
 load(file.path("data", "refs.RData"))
@@ -17,10 +14,10 @@ gpi <- read.csv(file.path("data", "2019_GPI.csv"))
 hdi <- read.csv(file.path("data", "2021_HDI_UNDP.csv"))
 native <- readLines(file.path("data", "native.txt"))
 
-population <- read.csv(file.path("data", "2021-03-13_population_worldbank.csv"), skip=4)
+researchers <- read.csv(file.path("data", "2021-03-13_researchers_per_country_worldbank.csv"), skip=4)
 
 # Transform data ----------------------------------------------------------
-colnames(gdp)[1:2] <- colnames(research_fund)[1:2] <- colnames(population)[1:2] <- c("country", "code")
+colnames(gdp)[1:2] <- colnames(research_fund)[1:2] <- colnames(researchers)[1:2] <- c("country", "code")
 
 # * Add country code if missing -------------------------------------------
 hdi$code <- countrycode(hdi$Country, "country.name", "iso3c")
@@ -47,16 +44,6 @@ research_fund <- research_fund %>% select(-Indicator.Name) %>%
 	group_by(code) %>% 
 	summarise(research = mean(value, na.rm = TRUE)) 
 
-population <- population %>% 
-	pivot_longer(cols=X1990:X2019) %>% 
-	mutate(year=as.numeric(gsub("X", "", name))) %>% 
-	group_by(code) %>% 
-	summarise(pop = mean(value, na.rm = TRUE)) 
-
-research_fund <- merge(research_fund, population) %>% #research funding per capita
-	mutate(research=research/pop) %>% 
-	select(code, research)
-
 hdi <- hdi %>% 
 	pivot_longer(cols=X1990:X2019) %>% 
 	mutate(year=as.numeric(gsub("X", "", name))) %>% 
@@ -72,15 +59,21 @@ multimerge       <- function(x, y, by="code"){
 df <- Reduce(multimerge, list(pubs, gdp, hdi, research_fund, epi, gpi))
 df$imperialism <- 0
 df$imperialism[df$code %in% imperialism$code] <- 1
+nrow(df)
 df <- na.omit(df)
+nrow(df)
+
 # Models ------------------------------------------------------------------
 
 # * Stand-alone -----------------------------------------------------------
-mod.fin <- lm(npubs ~ gdp + hdi + research + gpi + epi + imperialism, df)
+mod.fin <- lm(npubs ~ gdp + hdi + gpi + epi + imperialism, df)
 mod.fin <- step(mod.fin)
 
 mod.gdp <- lm(gdp ~ hdi + gpi + epi + imperialism, df)
 mod.gdp <- step(mod.gdp)
+
+mod.hdi <- lm(hdi ~ gdp + research + imperialism + gpi, df)
+mod.hdi <- step(mod.hdi)
 
 mod.epi <- lm(epi ~ gdp + hdi + research, df) 
 
@@ -88,24 +81,22 @@ mod.research <- lm(research ~ gdp + epi + imperialism, df)
 mod.research <- step(mod.research)
 
 # * SEM -------------------------------------------------------------------
-model.list <- list(mod.fin, mod.research)
+model.list <- list(mod.fin, mod.hdi)
 
 res <- as.psem(model.list)
 summary(res)
+plot(res)
 
 res2 <- update(res, mod.gdp)
-res3 <- update(res2, mod.epi)
+summary(res2)
+plot(res2)
 
-AIC(res, res2)
-AIC(res2, res3)
-
-coefs_res <-coefs(res)
-plot(res) # to view
+coefs_res <-coefs(res2)
 
 # Plot --------------------------------------------------------------------
-coords <- data.frame(name=c("npubs", "research", "imperialism", "hdi", "gdp", "epi"),
+coords <- data.frame(name=c("npubs", "research", "imperialism", "hdi", "gdp", "gpi"),
 					 labels =c("Number of\npublications", "Research\nfunding", "Imperialist\nbackground", 
-					 		  "HDI", "GDP", "EEP"),
+					 		  "HDI", "GDP", "GPI"),
 					 x=c(2, 2,1,3,1.5,2.5),
 					 y=c(1,2,2,2,3,3))
 
@@ -117,12 +108,13 @@ coefs_res$y2 <- plyr::mapvalues(coefs_res$Response, coords$name, coords$y)%>% as
 
 
 ggplot() +
-	geom_segment(data=coefs_res, aes(x=x1, y=y1, xend=x2, yend=y2))+
+	geom_segment(data=coefs_res, aes(x=x1, y=y1, xend=x2, yend=y2, size=abs(Std.Estimate), 
+									 col=ifelse(Std.Estimate < 0, "-", "+")))+
 	geom_label(data=coords, aes(x=x, y=y, label=labels), 
 			   hjust=0.5, label.r=unit(0.05, "lines"), 
 			   label.padding = unit(0.3, "lines"), size=3) +
-	geom_text(data=coefs_res, aes(x=(x1+x2)/2, y=(y1+y2)/2, 
-								  label=round(Std.Estimate, 2)), size=3) +
+	# geom_text(data=coefs_res, aes(x=(x1+x2)/2, y=(y1+y2)/2, 
+	# 							  label=round(Std.Estimate, 2)), size=3) +
 	coord_cartesian(xlim=c(0.5,3.5), ylim=c(0.5, 3.5)) +
 	theme_void()
 
