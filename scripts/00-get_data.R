@@ -57,8 +57,6 @@ saveRDS(pbdb[,c("collection_no", "lng", "lat", "reference_no", "country", "cc")]
 
 all_refs <- read.csv("https://raw.githubusercontent.com/paleoscientometrics/paleo-aff-initiative/main/data_archive/PBDB_refs.csv")
 
-all_refs <- all_refs[all_refs$pubyr > 1989 & all_refs$pubyr < 2021,]
-
 completed_refs <- read.csv("https://raw.githubusercontent.com/paleoscientometrics/paleo-aff-initiative/main/data_archive/aff-data-complete.csv")
 
 completed_refs$aff_country <- plyr::mapvalues(completed_refs$aff_country, 

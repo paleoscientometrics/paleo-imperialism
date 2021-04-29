@@ -2,6 +2,7 @@ library(tidyverse)
 library(igraph)
 library(countrycode)
 library(ggplot2)
+library(patchwork)
 
 pal <- c("#f0ffe9", "#ffe599", "#bbe487", "#4e9755", "#173109")
 
@@ -165,7 +166,6 @@ p2 <- p1 + theme_void() +
 					vjust=0)
 ggsave(file.path("figs", "Fig_02_network_global.svg"), p2, width=15, h=10)
 
-
 # Igraph: statistics ------------------------------------------------------
 gr <- df[,c("aff_code", "samp_code")]
 gr <- gr[gr$aff_code != gr$samp_code,] # remove self nodes
@@ -175,6 +175,33 @@ gr$degree <- igraph::degree(gr) # the degree of a node in a network is the numbe
 gr$betweenness <- igraph::betweenness(gr) # detecting the amount of influence a node has over the flow of information in a graph. 
 gr$closeness <- igraph::closeness(gr) #the more central a node is, the closer it is to all other nodes. 
 
+
+reshape.df <- function(x){
+	x <- sort(x, decreasing = TRUE)[1:15]
+	x <- data.frame(value=x)
+	x$code <- rownames(x)
+	x$country <- countrycode(x$code, "iso3c", "country.name")
+	return(x)
+}
+
+degree_top15 <- reshape.df(gr$degree)
+betweenness_top15 <- reshape.df(gr$betweenness)
+closeness_top15 <- reshape.df(gr$closeness)
+
+p3 <- ggplot(degree_top15, aes(x=reorder(country, value), y=value)) +
+	geom_bar(stat="identity", fill=pal[4]) + coord_flip(expand=FALSE) +
+	labs(y="Degree", x="") +
+	ggthemes::theme_hc()
+
+p4 <- ggplot(betweenness_top15, aes(x=reorder(country, value), y=value)) +
+	geom_bar(stat="identity", fill=pal[4]) + coord_flip(expand=FALSE) +
+	labs(y="Betweenness", x="") +
+	ggthemes::theme_hc()
+
+svg(file.path("figs", "Supplementary", "Fig_S2_network_stats.svg"), w=8, h=3)
+p3 + p4 + plot_annotation(tag_levels = "a", tag_prefix = "(", tag_suffix = ")") & 
+	theme(plot.tag = element_text(size = 10))
+dev.off()
 
 # Parachute science -------------------------------------------------------
 df3 <- df
