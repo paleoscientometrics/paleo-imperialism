@@ -93,7 +93,7 @@ ggsave(file.path("figs", "Fig_01_parachute_science.svg"),
 
 # Over time ---------------------------------------------------------------
 countries <- c("Brazil", "Argentina", "Mexico", "China", "Japan", "India",
-			   "South Africa", "Morocco")
+			   "South Africa")
 
 individual <- unique(dat[dat$aff_country %in% countries,])
 individual <- merge(individual, all_refs[,c("reference_no", "pubyr")], all.x=TRUE, all.y=FALSE)

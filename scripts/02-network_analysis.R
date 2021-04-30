@@ -8,6 +8,7 @@ pal <- c("#f0ffe9", "#ffe599", "#bbe487", "#4e9755", "#173109")
 
 # Load data ---------------------------------------------------------------
 load(file.path("data", "refs.RData"))
+
 df <- completed_refs
 df <- df[!is.na(df$aff_country),]
 
@@ -57,7 +58,6 @@ edges <- edges %>%
 
 edges <- na.omit(edges)
 # edges <- dplyr::select(edges, from, to, weight)
-
 
 # Plot --------------------------------------------------------------------
 edges <- edges[edges$samp_country != "",] 
@@ -245,7 +245,12 @@ refs_countries$index <- log(refs_countries$prop)
 
 refs_countries$code <- countrycode::countrycode(refs_countries$country, origin="country.name", destination="iso3c")
 
-#
+# add threshold of 30
+refs_countries$total <- refs_countries$local + refs_countries$outgoing
+refs_countries <-  refs_countries[refs_countries$total >=30,]
+
+#remove svalbard & greenland
+refs_countries <- refs_countries[!refs_countries$code %in% c("SJM", "GRL"),]
 
 # Plot --------------------------------------------------------------------
 
@@ -263,7 +268,7 @@ world$col <- ifelse(world$index >= 0, "high", "low")
 x11(w=10,h=6)
 ggplot(world, aes(x=long, y=lat)) +
 	geom_polygon(aes(group=group, fill=index), col="white") +
-	scale_fill_gradient(low=pal[1], high=pal[5]) +
+	scale_fill_gradient(low=pal[1], high=pal[4]) +
 	labs(fill="Parachute \nindex") +
 	theme_void()+
 	theme(legend.position = "bottom") +
@@ -271,3 +276,12 @@ ggplot(world, aes(x=long, y=lat)) +
 
 ggsave("figs/Fig_03_map_parachute.svg", w=10, h=6)
 
+
+# Top countries suffering from parachutism --------------------------------
+parachuted <- refs_countries %>% slice_min(order_by = index, n=10)
+parachuted
+
+parachuted$region <- countrycode(parachuted$code, "iso3c", "region23")
+
+write.csv(parachuted[,c("country", "region", "local", "outgoing", "index")], 
+          file.path("output", "Table_S_top_parachuted.csv"), row.names = FALSE)
