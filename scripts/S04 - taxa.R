@@ -78,7 +78,7 @@ pbdb.mmr$categories <- factor(pbdb.mmr$categories,
 
 ggplot(pbdb.mmr, aes(x=reorder(aff_country,total), y=n, fill=categories)) +
   geom_bar(stat="identity", width=0.8) +
-  labs(x="") +
+  labs(x="", fill="") +
   facet_grid(samp_country~., scales = "free", space = "free_y") +
   scale_fill_manual(values=pal[5:3])+
   guides(fill=guide_legend(nrow=2)) +
