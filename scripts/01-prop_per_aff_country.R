@@ -2,6 +2,7 @@ library(tidyverse)
 library(igraph)
 library(countrycode)
 library(ggthemes)
+library(patchwork)
 
 pal <- c("#f0ffe9", "#ffe599", "#bbe487", "#4e9755", "#173109")
 
@@ -21,13 +22,50 @@ dat <- dat[!is.na(dat$samp_code),]
 
 dat <- merge(dat, pbdb[,c("reference_no", "collection_no")], all.x=TRUE, all.y=FALSE)
 
+
+# Grip map: collections sampled per country -------------------------------
+
+# Load grid data
+worldtilegrid <- read.csv(file.path("data", "worldtilegrid.csv"))
+worldtilegrid$alpha.2[worldtilegrid$alpha.2=="GB"] <- "UK"
+
+# Calculate no of collections sampled in each country
+freq_samp <- data.frame(table(pbdb$cc))
+colnames(freq_samp) <- c("alpha.2", "freq")
+
+worldtilegrid <- merge(worldtilegrid, freq_samp)
+
+theme_map <- theme_minimal() + 
+	theme(panel.grid = element_blank(), axis.text = element_blank(), 
+		  axis.title = element_blank(),
+		  legend.text = element_text(angle=45, hjust=0.5),
+		  legend.position = "bottom",
+		  legend.title = element_text(face="bold"))
+
+
+p1 <- ggplot(worldtilegrid, aes(xmin = x, ymin = y, xmax = x + 1, ymax = y + 1)) +
+	geom_rect(aes(fill=log(freq)), color = "#ffffff") + 
+	scale_fill_gradient2(high = pal[5], low=pal[1], mid=pal[3], midpoint=7,
+						breaks=log(c(1, 10, 100, 1000, 10000,100000, 400000)),
+						labels=c(1, 10, 100, 1000, 10000,100000, 400000)
+	)+
+	labs(fill="Number of collections") +
+	geom_text(aes(x = x, y = y, label = ifelse(freq > 10000, alpha.2, "")),
+				  col="white", 
+			  nudge_x = 0.5, nudge_y = -0.5, size = 3) +	
+	scale_color_manual(values=c(pal[4], pal[1]))+
+	scale_y_reverse() +
+	guides(color=FALSE)+
+	coord_equal()+
+	theme_map
+
 # Overall patterns --------------------------------------------------------
 
 # * Number of collections per country ---------------------------------------
-colls <- unique(dat[,c("collection_no", "code")])
+colls <- unique(dat[,c("collection_no", "aff_code")])
 total_colls <- length(unique(dat$collection_no))
 
-colls_n <- data.frame(table(colls$code), stringsAsFactors = FALSE)
+colls_n <- data.frame(table(colls$aff_code), stringsAsFactors = FALSE)
 colnames(colls_n) <- c("code", "freq")
 colls_n$freq <- colls_n$freq/total_colls
 
@@ -42,10 +80,10 @@ sum(topcountries$freq)
 topcountries$country <- countrycode(topcountries$code, origin = "iso3c", destination = "country.name")
 
 # * In foreign country ----------------------------------------------------
-dat2 <- dat[dat$code != dat$code2,]
-dat2 <- unique(dat2[,c("collection_no", "code")])
+dat2 <- dat[dat$aff_code != dat$samp_code,]
+dat2 <- unique(dat2[,c("collection_no", "aff_code")])
 
-colls_n2 <- data.frame(table(dat2$code), stringsAsFactors = FALSE)
+colls_n2 <- data.frame(table(dat2$aff_code), stringsAsFactors = FALSE)
 colnames(colls_n2) <- c("code", "foreign")
 colls_n2$foreign <- colls_n2$foreign/total_colls
 
@@ -55,13 +93,13 @@ topcountries <- merge(topcountries, colls_foreign)
 
 # * Does not include any local researcher ---------------------------------
 dat$local <- 1
-dat$local[dat$code != dat$code2] <- 0
-dat3 <- dat[!duplicated(dat[,c("code", "collection_no")]),]
+dat$local[dat$aff_code != dat$samp_code] <- 0
+dat3 <- dat[!duplicated(dat[,c("aff_code", "collection_no")]),]
 
 local_sum <- tapply(dat3$local, dat3$collection_no, sum)
 dat3 <- colls[colls$collection_no %in% names(which(local_sum == 0)),]
 
-colls_n3 <- data.frame(table(dat3$code), stringsAsFactors = FALSE)
+colls_n3 <- data.frame(table(dat3$aff_code), stringsAsFactors = FALSE)
 colnames(colls_n3) <- c("code", "parachute")
 colls_n3$parachute <- colls_n3$parachute/total_colls
 
@@ -79,21 +117,29 @@ topcountries <- topcountries %>%  select(local, foreign, parachute, country, imp
 
 topcountries$type <- factor(topcountries$type, levels=c("local", "foreign", "parachute"))
 
-ggplot(topcountries, aes(x=reorder(country, freq), y=freq*100, fill=type)) +
+p2 <- ggplot(topcountries, aes(x=reorder(country, freq), y=freq*100, fill=type)) +
 	geom_bar(stat="identity") +
 	labs(x="", y=" % contribution to fossil collections", fill="Fieldwork")+
 	scale_fill_manual(values=pal[c(3:5)], 
-					  labels=c("In same country", "In a foreign country", "In a foreign country \nw/o local collaboration")) +
+					  labels=c("Domestic research", "Foreign research", 
+					  		 "Foreign research \nno local collaboration")) +
 	coord_flip() +
 	guides(fill=guide_legend(ncol=2)) 
 
-ggsave(file.path("figs", "Fig_01_parachute_science.svg"), 
-	   height=5, w=6)
+
+# Merge plots -------------------------------------------------------------
+svg(file.path("figs", "Fig_01_parachute_science.svg"), 
+	height=10, width=7)
+p1 + p2 + plot_layout(ncol=1, heights=c(0.5, 0.2)) +
+	plot_annotation(tag_levels = "a", tag_prefix = "(", tag_suffix = ")") & 
+	theme(plot.tag = element_text(size = 10))
+dev.off()
+
 
 
 # Over time ---------------------------------------------------------------
 countries <- c("Brazil", "Argentina", "Mexico", "China", "Japan", "India",
-			   "South Africa", "Morocco")
+			   "South Africa")
 
 individual <- unique(dat[dat$aff_country %in% countries,])
 individual <- merge(individual, all_refs[,c("reference_no", "pubyr")], all.x=TRUE, all.y=FALSE)
@@ -167,7 +213,7 @@ temp2 <- temp2 %>% group_by(samp_country, pubyr) %>%
 	group_by(samp_country) %>% 
 	mutate(rM=fnrollmean(n))
 
-p1 <- p1 <- ggplot(temp2, aes(x=pubyr, y=rM, col=samp_country)) +
+p1 <- ggplot(temp2, aes(x=pubyr, y=rM, col=samp_country)) +
 	geom_line(size=1) +
 	scale_color_manual(values=pal[c(4,3)]) +
 	labs(x="Year", y="Number of publications", col="Countries")+

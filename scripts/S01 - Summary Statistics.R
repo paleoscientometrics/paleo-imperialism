@@ -1,3 +1,4 @@
+library(tidyverse)
 
 # Load data ---------------------------------------------------------------
 
@@ -23,3 +24,23 @@ length(ncount[ncount > 1])
 
 table(ncount)
 
+# Languages
+languages <- setNames(data.frame(table(all_refs$language)), c("language", "freq"))
+languages$language <- as.character(languages$language)
+
+languages$language[!languages$language %in% c("English", "French", "Spanish", "German", "Chinese")] <- "Other"
+
+nn <- sum(languages$freq)
+
+data <- languages %>% group_by(language) %>% 
+	summarise(freq=sum(freq)) %>% 
+	arrange(freq)
+
+data$language <- factor(data$language, levels=data$language)
+
+svg(file.path("figs", "languages.svg"), w=4, h=4)
+PieDonut(data,aes(language, count=freq),ratioByGroup=FALSE,
+		 explode = 6,
+		 showRatioThreshold = getOption("PieDonut.showRatioThreshold", 0.05)) +
+	scale_fill_manual(values=RColorBrewer::brewer.pal(8, "Greens"))
+dev.off()

@@ -249,25 +249,57 @@ refs_countries$code <- countrycode::countrycode(refs_countries$country, origin="
 
 # Plot --------------------------------------------------------------------
 
-world <- map_data("world")
-world$code <- countrycode::countrycode(world$region, origin="country.name", destination="iso3c")
+#Tile grid
+# Load grid data
+worldtilegrid <- read.csv(file.path("data", "worldtilegrid.csv"))
+worldtilegrid$alpha.2[worldtilegrid$alpha.2=="GB"] <- "UK"
 
-world <- world %>% left_join(refs_countries %>% select(code, index))
+refs_countries$total <- refs_countries$local + refs_countries$outgoing 
 
-region.lab.data <- world %>%
-	group_by(region) %>%
-	summarise(long = mean(long), lat = mean(lat))
+pari <- merge(worldtilegrid, 
+			  refs_countries[,c("code", "index")],
+			  by.x="alpha.3", by.y="code" )
 
-world$col <- ifelse(world$index >= 0, "high", "low")
+theme_map <- theme_minimal() + 
+	theme(panel.grid = element_blank(), axis.text = element_blank(), 
+		  axis.title = element_blank(),
+		  #legend.text = element_text(angle=45, hjust=0.5),
+		  legend.position = "bottom",
+		  legend.title = element_text(face="bold"))
 
-x11(w=10,h=6)
-ggplot(world, aes(x=long, y=lat)) +
-	geom_polygon(aes(group=group, fill=index), col="white") +
-	scale_fill_gradient(low=pal[1], high=pal[5]) +
-	labs(fill="Parachute \nindex") +
-	theme_void()+
-	theme(legend.position = "bottom") +
-	coord_equal()
 
-ggsave("figs/Fig_03_map_parachute.svg", w=10, h=6)
+p1 <- ggplot(pari, aes(xmin = x, ymin = y, xmax = x + 1, ymax = y + 1)) +
+	geom_rect(aes(fill=index), color = "#ffffff") + 
+	scale_fill_gradient2(high = "#c5197dff", mid="#de75aeff", low="#fddeee30",
+						 midpoint = 1,
+						 na.value = "grey80")+
+	labs(fill="Number of collections") +
+	geom_text(aes(x = x, y = y, label = ifelse(index < 0, alpha.2, "")),
+			  col="#c5197dff", 
+			  nudge_x = 0.5, nudge_y = -0.5, size = 3) +	
+	scale_y_reverse() +
+	guides(color=FALSE)+
+	coord_equal()+
+	theme_map
 
+bottom10 <- refs_countries %>% 
+	filter(!code %in% c("SJM", "GLD")) %>%
+	filter(total > 29) %>% 
+	slice_min(order_by=index, n=10)
+
+p2 <- ggplot(bottom10, aes(x=reorder(country, -index), y=index)) +
+	geom_bar(stat="identity", fill="#c5197dff") +
+	scale_y_continuous(trans="reverse") +
+	labs(x="", y=" Parachute index")+
+	coord_flip() +
+	ggthemes::theme_hc() +
+	theme(axis.title = element_text(face="bold"),
+		  legend.title = element_text(face="bold"))
+
+svg(file.path("figs", "Fig_03_parachute_index.svg"), 
+	height=10, width=7)
+p1 + p2 + plot_layout(ncol=1, heights=c(0.55, 0.15)) +
+	plot_annotation(tag_levels = "a", tag_prefix = "(", tag_suffix = ")") & 
+	theme(plot.tag = element_text(size = 10))
+dev.off()
+	

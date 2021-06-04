@@ -101,7 +101,7 @@ for (reg in c("Asia", "Europe", "South America", "Africa")){
 	# Setting them to NA will render no labels:
 	
 	V(g)$label.color <- "black"
-	E(g)$width <- E(g)$weight/sum(E(g)$weight)*20
+	E(g)$width <- E(g)$weight/sum(E(g)$weight)*15
 	E(g)$edge.color <- "gray80"
 	
 	V(g)$frame.color <- "white"
@@ -109,7 +109,7 @@ for (reg in c("Asia", "Europe", "South America", "Africa")){
 	
 	plot(g, 
 		 layout=layout_with_gem, edge.curved=.1,
-		 vertex.label.cex 	=0.8)
+		 vertex.label.cex 	=0.8, arrow.size=0.2, arrow.width=0.2)
 	start = start +1
 	title(main=paste0("(", letters[start], ") ", reg),adj=0, font.main=1, cex.main=1)
 	
