@@ -63,9 +63,11 @@ df$logpubs <- log(df$npubs)
 
 # * Stand-alone -----------------------------------------------------------
 mod.fin <- lm(logpubs~ hdi + epi + imperialism + gpi, df)
+summary(mod.fin)
 
 mod.hdi <- lm(hdi ~ gdp + imperialism + gpi, df)
 mod.hdi <- step(mod.hdi)
+mod.hdi
 
 mod.epi <- lm(epi ~ hdi + gdp + imperialism + gpi, df)
 mod.epi <- step(mod.epi)

@@ -63,20 +63,22 @@ p1 <- ggplot(worldtilegrid, aes(xmin = x, ymin = y, xmax = x + 1, ymax = y + 1))
 
 # * Number of collections per country ---------------------------------------
 colls <- unique(dat[,c("collection_no", "aff_code")])
+
+#check %
+income_class <- read.csv("data/2019_income_classification_worldbank.csv")
+colls_income <- merge(colls, income_class, by.x="aff_code", by.y="code", all.x=TRUE, all.y=FALSE)
+sum(sort(prop.table(table(colls_income$classification)))[3:4])
+
+###
 total_colls <- length(unique(dat$collection_no))
 
 colls_n <- data.frame(table(colls$aff_code), stringsAsFactors = FALSE)
 colnames(colls_n) <- c("code", "freq")
 colls_n$freq <- colls_n$freq/total_colls
 
-colls_n$imperial <- 0
-colls_n$imperial[colls_n$code %in% imperialism$code] <- 1
 colls_n <- colls_n[order(colls_n$freq, decreasing = TRUE),]
 
-#n <- which(cumsum(colls_n$freq) > 0.8)[1]
-
 topcountries <- colls_n[1:15,]
-sum(topcountries$freq)
 topcountries$country <- countrycode(topcountries$code, origin = "iso3c", destination = "country.name")
 
 # * In foreign country ----------------------------------------------------
@@ -108,6 +110,27 @@ colls_parachute <-colls_n3[colls_n3$code %in% topcountries$code,]
 
 topcountries <- merge(topcountries, colls_parachute)
 
+#switzerland
+swiss <- dat[dat$aff_code=="CHE",]
+domestic_che <- subset(swiss, samp_code=="CHE")
+foreign_che <- subset(swiss, samp_code!="CHE")
+
+length(unique(domestic_che$reference_no))/length(unique(swiss$reference_no))
+length(unique(foreign_che$reference_no))/length(unique(swiss$reference_no))
+
+# 
+get_prop <- function(countries){
+cc <- countrycode(countries, "country.name", "iso3c")
+aff <- dat[dat$samp_country %in% countries,]
+aff <- unique(aff[,c("reference_no", "aff_code")])
+
+prop.table(sort(table(aff$aff_code)))
+}
+
+get_prop(c("Morocco", "Algeria", "Tunisia"))
+get_prop(c("Tanzania"))
+get_prop(c("South Africa", "Egypt"))
+
 # Final calculations for bar chart ----------------------------------------
 topcountries$local <- topcountries$freq - topcountries$foreign
 topcountries$foreign <- topcountries$foreign - topcountries$parachute
@@ -136,6 +159,27 @@ p1 + p2 + plot_layout(ncol=1, heights=c(0.5, 0.2)) +
 dev.off()
 
 
+# Local authors -----------------------------------------------------------
+first <- dat[duplicated(dat$reference_no)==FALSE,]
+first$first_local <- 0
+first$first_local[which(first$samp_code == first$aff_code)] <- 1
+
+first$region <- countrycode(first$samp_code, "iso3c", "region23")
+first <-first %>% group_by(region, first_local) %>% 
+	tally() %>% 
+	ungroup() %>% group_by(region) %>% 
+	mutate(total=sum(n)) %>% 
+	ungroup() %>% 
+	filter(first_local == 1) %>% 
+	mutate(freq=n/total)
+
+
+ggplot(first, aes(x=reorder(region, freq), y=freq*100)) +
+	geom_bar(stat="identity", fill=pal[3]) +
+	labs(x="", y=" % publications led by local author")+
+	coord_flip() 
+
+ggsave(file.path("figs","Supplementary", "Fig_S_local_authors.svg"), w=8, h=6)
 
 # Over time ---------------------------------------------------------------
 countries <- c("Brazil", "Argentina", "Mexico", "China", "Japan", "India",
