@@ -10,12 +10,17 @@ pbdb$iso3c[pbdb$cc=="UK"] <- countrycode("United Kingdom", "country.name", "iso3
 pbdb <- pbdb[!is.na(pbdb$iso3c),]
 
 income_class <- read.csv(file.path("data", "2019_income_classification_worldbank.csv"))
+income_class$region <- countrycode(income_class$code, "iso3c", "region23")
+imperial <- read.csv(file.path("data", "imperialism.csv"))
+imperial$code <- countrycode(imperial$country, "country.name", "iso3c")
+income_class$colonialism <- 0
+income_class$colonialism[income_class$code %in% imperial$code] <- 1
 
 dat <- merge(pbdb, income_class, by.x="iso3c", by.y="code", all.x=T, all.y=F)
 
 need<-c("collection_no","collection_name","accepted_name","accepted_rank","identified_name","identified_rank","early_interval","late_interval","max_ma","min_ma",
 		"reference_no","phylum","class","order","family","genus","lng","lat","paleolng","paleolat","formation","lithology1","lithification1","environment","created","zone",
-		"iso3c", "country", "classification")
+		"iso3c", "country", "classification", "reference_no", "region", "colonialism")
 dat <- dat[,need]
 
 # Taxonomic filtering ----
@@ -144,13 +149,88 @@ legend("top",inset=c(0.01,0.01),
 	   legend=c("Lower middle and low income", "High and upper middle","All data"),
 	   col=c("red", "#00BB33","blue"),lwd=c(1,2),bg="white",cex=0.8)
 
-# Subsampling
-sqsStagesPlot <-subsample(dat,bin="stg",tax="clgen",coll="collection_no",q=0.7,iter=100,ref="reference_no",singleton="ref",type="sqs",duplicates=FALSE,excludeDominant=TRUE,largestColl =TRUE,output="dist",na.rm=TRUE)
-sqsStagesPlot.high <-subsample(dat[dat$classification %in% c("H", "UM"),],bin="stg",tax="clgen",coll="collection_no",q=0.7,iter=100,ref="reference_no",singleton="ref",type="sqs",duplicates=FALSE,excludeDominant=TRUE,largestColl =TRUE,output="dist",na.rm=TRUE)
-sqsStagesPlot.low <-subsample(dat[dat$classification %in% c("L", "LM"),],bin="stg",tax="clgen",coll="collection_no",q=0.7,iter=100,ref="reference_no",singleton="ref",type="sqs",duplicates=FALSE,excludeDominant=TRUE,largestColl =TRUE,output="dist",na.rm=TRUE)
+# B. Subsampling
+it=100
+sqsStagesPlot <-subsample(dat,bin="stg",tax="clgen",coll="collection_no",q=0.7,iter=it,ref="reference_no",singleton="ref",type="sqs",duplicates=FALSE,excludeDominant=TRUE,largestColl =TRUE,output="dist",na.rm=TRUE)
+sqsStagesPlot.high <-subsample(dat[dat$classification %in% c("H", "UM"),],bin="stg",tax="clgen",coll="collection_no",q=0.7,iter=it,ref="reference_no",singleton="ref",type="sqs",duplicates=FALSE,excludeDominant=TRUE,largestColl =TRUE,output="dist",na.rm=TRUE)
+sqsStagesPlot.low <-subsample(dat[dat$classification %in% c("L", "LM"),],bin="stg",tax="clgen",coll="collection_no",q=0.7,iter=it,ref="reference_no",singleton="ref",type="sqs",duplicates=FALSE,excludeDominant=TRUE,largestColl =TRUE,output="dist",na.rm=TRUE)
 
-tsplot(stages,boxes="sys",shading="sys",xlim=4:95,ylim=c(0,2800),ylab="Richness (corrected SIB)",xlab="Age (Ma)")
+tsplot(stages,boxes="sys",shading="sys",xlim=4:95,ylim=c(0,1500),ylab="Richness (corrected SIB)",xlab="Age (Ma)")
 lines(stages$mid, sqsStagesPlot$divCSIB[ ,51],col="blue",lwd=2)
 lines(stages$mid, sqsStagesPlot.high$divCSIB[ ,51],col="#00BB33",lwd=2)
 lines(stages$mid, sqsStagesPlot.low$divCSIB[ ,51],col="red",lwd=2)
-legend("topleft",bg="white",legend=c("raw data","subsampling trial"),col=c("blue","#00000088"),lwd=3,inset=c(0.01,0.01))
+legend("top",inset=c(0.01,0.01),
+       legend=c("Lower middle and low income", "High and upper middle","All data"),
+       col=c("red", "#00BB33","blue"),lwd=c(1,2),bg="white",cex=0.8)
+
+# C. Europe and North America
+ddStages <-divDyn(dat,bin="stg",tax="clgen")
+
+reg<- unique(grep("Europe", income_class$region, value=T))
+regions <- c(reg, "North America", "Eastern Asia", "Australia and New Zealand")
+
+ddStages.eu <- divDyn(dat[dat$region %in% regions,], bin="stg",tax="clgen")
+ddStages.neu <- divDyn(dat[!dat$region %in% regions,], bin="stg",tax="clgen")
+
+tsplot(stages,boxes="sys",shading="sys",xlim=4:95,ylim=c(0,2800),ylab="Richness (raw data)",xlab="Age (Ma)")
+lines(stages$mid, ddStages$divCSIB,col="blue",lwd=2)
+lines(stages$mid, ddStages.eu$divCSIB,col="#00BB33",lwd=1)
+lines(stages$mid, ddStages.neu$divCSIB,col="red",lwd=1)
+
+legend("top",inset=c(0.01,0.01),
+       legend=c("All data", "Europe, North America,  Eastern Asia & Australia and New Zealand", "Rest of the World"),
+       col=c("blue", "#00BB33", "red"),lwd=c(1,2),bg="white",cex=0.8)
+
+cor.test(ddStages$divCSIB, ddStages.eu$divCSIB)
+
+# Subsampling
+it=100
+sqsStagesPlot.eu<-subsample(dat[dat$region %in% regions,],bin="stg",tax="clgen",coll="collection_no",q=0.7,iter=it,ref="reference_no",singleton="ref",type="sqs",duplicates=FALSE,excludeDominant=TRUE,largestColl =TRUE,output="dist",na.rm=TRUE)
+sqsStagesPlot.neu <-subsample(dat[!dat$region %in% regions,],bin="stg",tax="clgen",coll="collection_no",q=0.7,iter=it,ref="reference_no",singleton="ref",type="sqs",duplicates=FALSE,excludeDominant=TRUE,largestColl =TRUE,output="dist",na.rm=TRUE)
+
+tsplot(stages,boxes="sys",shading="sys",xlim=4:95,ylim=c(0,1500),ylab="Richness (corrected SIB)",xlab="Age (Ma)")
+lines(stages$mid, sqsStagesPlot$divCSIB[ ,51],col="blue",lwd=2)
+lines(stages$mid, sqsStagesPlot.eu$divCSIB[ ,51],col="#00BB33",lwd=2)
+lines(stages$mid, sqsStagesPlot.neu$divCSIB[ ,51],col="red",lwd=2)
+legend("top",inset=c(0.01,0.01),
+       legend=c("All data", "Europe, North America,  Eastern Asia & Australia and New Zealand", "Rest of the World"),
+       col=c("blue", "#00BB33", "red"),lwd=c(1,2),bg="white",cex=0.8)
+
+
+
+tsplot(stages,boxes="sys",shading="sys",xlim=4:95,ylim=c(0,1.5),ylab="Extinction Rate",xlab="Age (Ma)")
+lines(stages$mid, sqsStagesPlot$extPC[ ,51],col="blue",lwd=2)
+lines(stages$mid, sqsStagesPlot.eu$extPC[ ,51],col="#00BB33",lwd=2)
+lines(stages$mid, sqsStagesPlot.neu$extPC[ ,51],col="red",lwd=2)
+legend("top",inset=c(0.01,0.01),
+       legend=c("All data", "Europe, North America,  Eastern Asia & Australia and New Zealand", "Rest of the World"),
+       col=c("blue", "#00BB33", "red"),lwd=c(1,2),bg="white",cex=0.8)
+
+# Colonialism
+ddStages <-divDyn(dat,bin="stg",tax="clgen")
+ddStages.col <- divDyn(dat[dat$colonialism==1,], bin="stg",tax="clgen")
+ddStages.ncol <- divDyn(dat[dat$colonialism==0,], bin="stg",tax="clgen")
+
+# the plot
+tsplot(stages,boxes="sys",shading="sys",xlim=4:95,ylim=c(0,2800),ylab="Richness (raw data)",xlab="Age (Ma)")
+lines(stages$mid, ddStages$divCSIB,col="blue",lwd=2)
+lines(stages$mid, ddStages.col$divCSIB,col="#00BB33",lwd=1)
+lines(stages$mid, ddStages.ncol$divCSIB,col="red",lwd=1)
+
+legend("top",inset=c(0.01,0.01),
+       legend=c("No colonising history", "Cololnising history","All data"),
+       col=c("red", "#00BB33","blue"),lwd=c(1,2),bg="white",cex=0.8)
+
+# B. Subsampling
+it=100
+sqsStagesPlot <-subsample(dat,bin="stg",tax="clgen",coll="collection_no",q=0.7,iter=it,ref="reference_no",singleton="ref",type="sqs",duplicates=FALSE,excludeDominant=TRUE,largestColl =TRUE,output="dist",na.rm=TRUE)
+sqsStagesPlot.col <-subsample(dat[dat$colonialism==1,],bin="stg",tax="clgen",coll="collection_no",q=0.7,iter=it,ref="reference_no",singleton="ref",type="sqs",duplicates=FALSE,excludeDominant=TRUE,largestColl =TRUE,output="dist",na.rm=TRUE)
+sqsStagesPlot.ncol <-subsample(dat[dat$colonialism==0,],bin="stg",tax="clgen",coll="collection_no",q=0.7,iter=it,ref="reference_no",singleton="ref",type="sqs",duplicates=FALSE,excludeDominant=TRUE,largestColl =TRUE,output="dist",na.rm=TRUE)
+
+tsplot(stages,boxes="sys",shading="sys",xlim=4:95,ylim=c(0,1500),ylab="Richness (corrected SIB)",xlab="Age (Ma)")
+lines(stages$mid, sqsStagesPlot$divCSIB[ ,51],col="blue",lwd=2)
+lines(stages$mid, sqsStagesPlot.col$divCSIB[ ,51],col="#00BB33",lwd=2)
+lines(stages$mid, sqsStagesPlot.ncol$divCSIB[ ,51],col="red",lwd=2)
+legend("top",inset=c(0.01,0.01),
+       legend=c("No colonising history", "Cololnising history","All data"),
+       col=c("red", "#00BB33","blue"),lwd=c(1,2),bg="white",cex=0.8)
