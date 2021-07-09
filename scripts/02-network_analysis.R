@@ -273,7 +273,7 @@ p1 <- ggplot(pari, aes(xmin = x, ymin = y, xmax = x + 1, ymax = y + 1)) +
 	scale_fill_gradient2(high = "#c5197dff", mid="#de75aeff", low="#fddeee30",
 						 midpoint = 1,
 						 na.value = "grey80")+
-	labs(fill="Number of collections") +
+	labs(fill="Parachute Index") +
 	geom_text(aes(x = x, y = y, label = ifelse(index < 0, alpha.2, "")),
 			  col="#c5197dff", 
 			  nudge_x = 0.5, nudge_y = -0.5, size = 3) +	
