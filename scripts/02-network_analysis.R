@@ -297,8 +297,8 @@ p2 <- ggplot(bottom10, aes(x=reorder(country, -index), y=index)) +
 		  legend.title = element_text(face="bold"))
 
 svg(file.path("figs", "Fig_03_parachute_index.svg"), 
-	height=10, width=7)
-p1 + p2 + plot_layout(ncol=1, heights=c(0.55, 0.15)) +
+	height=8, width=7)
+p1 + p2 + plot_layout(ncol=1, heights=c(0.55, 0.25)) +
 	plot_annotation(tag_levels = "a", tag_prefix = "(", tag_suffix = ")") & 
 	theme(plot.tag = element_text(size = 10))
 dev.off()
