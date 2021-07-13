@@ -290,7 +290,7 @@ bottom10 <- refs_countries %>%
 p2 <- ggplot(bottom10, aes(x=reorder(country, -index), y=index)) +
 	geom_bar(stat="identity", fill="#c5197dff") +
 	scale_y_continuous(trans="reverse") +
-	labs(x="", y=" Parachute index")+
+	labs(x="", y=" Parachute Index")+
 	coord_flip() +
 	ggthemes::theme_hc() +
 	theme(axis.title = element_text(face="bold"),
