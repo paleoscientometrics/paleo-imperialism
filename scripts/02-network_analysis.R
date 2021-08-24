@@ -270,12 +270,12 @@ theme_map <- theme_minimal() +
 
 p1 <- ggplot(pari, aes(xmin = x, ymin = y, xmax = x + 1, ymax = y + 1)) +
 	geom_rect(aes(fill=index), color = "#ffffff") + 
-	scale_fill_gradient2(high = "#c5197dff", mid="#de75aeff", low="#fddeee30",
+	scale_fill_gradient2(high = "#fddeee30", mid="#de75aeff", low="#c5197dff",
 						 midpoint = 1,
 						 na.value = "grey80")+
-	labs(fill="Number of collections") +
+	labs(fill="Parachute Index") +
 	geom_text(aes(x = x, y = y, label = ifelse(index < 0, alpha.2, "")),
-			  col="#c5197dff", 
+			  col="#ffffff", 
 			  nudge_x = 0.5, nudge_y = -0.5, size = 3) +	
 	scale_y_reverse() +
 	guides(color=FALSE)+
@@ -290,15 +290,15 @@ bottom10 <- refs_countries %>%
 p2 <- ggplot(bottom10, aes(x=reorder(country, -index), y=index)) +
 	geom_bar(stat="identity", fill="#c5197dff") +
 	scale_y_continuous(trans="reverse") +
-	labs(x="", y=" Parachute index")+
+	labs(x="", y=" Parachute Index")+
 	coord_flip() +
 	ggthemes::theme_hc() +
 	theme(axis.title = element_text(face="bold"),
 		  legend.title = element_text(face="bold"))
 
 svg(file.path("figs", "Fig_03_parachute_index.svg"), 
-	height=10, width=7)
-p1 + p2 + plot_layout(ncol=1, heights=c(0.55, 0.15)) +
+	height=8, width=7)
+p1 + p2 + plot_layout(ncol=1, heights=c(0.55, 0.25)) +
 	plot_annotation(tag_levels = "a", tag_prefix = "(", tag_suffix = ")") & 
 	theme(plot.tag = element_text(size = 10))
 dev.off()
