@@ -1,0 +1,84 @@
+---
+title: Supplementary references for “Colonial history and global economics distort
+  our understanding of deep-time biodiversity”
+corresauth: '*Corresponding author, email: thisismyemail@email.de'
+abstract: This is where my abstract goes
+keywords: data, paleobiology, fossil
+author:
+- name: Nussaïbah B. Raja*
+  affiliation: GeoZentrum Nordbayern, Department of Geography and Geosciences, Friedrich-Alexander
+    University Erlangen-Nürnberg, Erlangen, Germany
+- name: ' Emma Dunne'
+  affiliation: '  School of Geography, Earth and Environmental Sciences, University
+    of Birmingham, Edgbaston, Birmingham, B15 2TT, UK'
+- name: ' Aviwe Matiwane'
+  affiliation: ' Department of Botany, Rhodes University, 3230 Lucas Ave, Grahamstown,
+    6139, South Africa'
+- name: ' Tasnuva Ming Khan'
+  affiliation: ' GeoZentrum Nordbayern, Department of Geography and Geosciences, Friedrich-Alexander
+    University Erlangen-Nürnberg, Erlangen, Germany'
+- name: ' Paulina S. Nätscher'
+  affiliation: ' GeoZentrum Nordbayern, Department of Geography and Geosciences, Friedrich-Alexander
+    University Erlangen-Nürnberg, Erlangen, Germany'
+- name: ' Aline M. Ghilardi'
+  affiliation: ' Federal University of Rio Grande do Norte (UFRN), Department of Geology,
+    Natal, RN, Brazil'
+- name: ' Devapriya Chattopadhyay'
+  affiliation: '  IISER Pune, Department of Earth and Climate Science, Dr. Homi Bhaba
+    Road, Pune 411008, India'
+params:
+  source: The Paleobiology Database
+  download url for occurrences: https://paleobiodb.org/data1.2/occs/list.csv?datainfo&rowcount&interval=Ediacaran,Holocene&show=class,classext,genus,subgenus,coll,coords,loc,paleoloc,strat,stratext,lith,env,ref,crmod,timebins,timecompare
+  download url for references: https://paleobiodb.org/data1.2/occs/refs.ris?interval=Ediacaran,Holocene&select=occs
+  date_downloaded: 19/01/21
+  data_format: Processed
+  data_access: Available to download from OSF
+  location: Global
+  time: 1990 – 2020
+enterer_names: enterernames.txt
+bibliography:
+- references.bib
+- packageref.bib
+
+output:
+  pdf_document:
+    citation_package: biblatex
+    keep_tex: no
+    fig_caption: yes
+    latex_engine: xelatex
+    template: template.tex
+date: "`r format(Sys.time(), '%B %d, %Y')`"
+geometry: margin=1in
+fontfamily: mathpazo
+fontsize: 11pt
+#feel free to change to accomodate for other styles, e.g. alphabetic
+biblio-style: numeric
+---
+# Overview
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+#create data frame and formats text based on parameters provided
+specs <- gsub("_", " ", refer::capitalize(names(params)))
+details <- as.character(unlist(params))
+
+df <- data.frame(Specifications=specs,
+                Details=details)
+
+kk <- knitr::kable(df, "latex", booktabs=TRUE, col.names = NULL,
+                   caption="Specifications Table")
+
+#makes first column bold
+kk <- kableExtra::column_spec(kk, 1, bold=TRUE)
+
+#increases the width of second column and allows wrapping of text
+kk <- kableExtra::column_spec(kk, 2, width = "35em")
+
+# tell latex to keep the position of the table
+kableExtra::kable_styling(kk, latex_options="hold_position")
+```
+
+# Methods
+This is where you can add more details about the data cleaning and/or maniputation.
+
+# Acknowledgements
+We would like to thank John Alroy and Charles Marshall, in addition to A. Miller, M. Koznik and others for their vision and critical early work in establishing the Paleobiology Database as well as the numerous contributors of data, without all of whom this study would not have been possible. This report was generated using the R package `refer` `r packageVersion("refer")` [@refer2021].
