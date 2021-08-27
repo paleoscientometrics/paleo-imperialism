@@ -135,7 +135,12 @@ get_prop(c("South Africa", "Egypt"))
 topcountries$local <- topcountries$freq - topcountries$foreign
 topcountries$foreign <- topcountries$foreign - topcountries$parachute
 
-topcountries <- topcountries %>%  select(local, foreign, parachute, country, imperial) %>% 
+
+# get percentage
+regio <- topcountries[topcountries$country %in% c("Argentina", "China", "Japan"),]
+regio$local/regio$freq
+
+topcountries <- topcountries %>%  select(local, foreign, parachute, country) %>% 
 	pivot_longer(cols=c("local", "foreign", "parachute"), names_to = c("type"), values_to="freq")
 
 topcountries$type <- factor(topcountries$type, levels=c("local", "foreign", "parachute"))
