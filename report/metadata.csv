@@ -3,17 +3,17 @@ title,Supplementary references for “Colonial history and global economics dist
 authors,"Nussaïbah B. Raja; Emma Dunne; Aviwe Matiwane; Tasnuva Ming
 Khan; Paulina S. Nätscher; Aline M. Ghilardi; Devapriya Chattopadhyay"
 corresauth,1
-corresemail,thisismyemail@email.de
+corresemail,nussaibah.raja.schoob@fau.de
 affiliation,"GeoZentrum Nordbayern, Department of Geography and Geosciences, Friedrich-Alexander University Erlangen-Nürnberg, Erlangen, Germany;  School of Geography, Earth and Environmental Sciences, University of Birmingham, Edgbaston, Birmingham, B15 2TT, UK; Department of Botany, Rhodes University, 3230 Lucas Ave, Grahamstown, 6139, South Africa; GeoZentrum Nordbayern, Department of Geography and Geosciences, Friedrich-Alexander University Erlangen-Nürnberg, Erlangen, Germany; GeoZentrum Nordbayern, Department of Geography and Geosciences, Friedrich-Alexander University Erlangen-Nürnberg, Erlangen, Germany; Federal University of Rio Grande do Norte (UFRN), Department of Geology, Natal, RN, Brazil;  IISER Pune, Department of Earth and Climate Science, Dr. Homi Bhaba Road, Pune 411008, India"
-abstract,This is where my abstract goes
-keywords,"data, paleobiology, fossil"
+abstract,This document contains the references for the data sources used in the study
+keywords,"paleontology, biodiversity, sampling biases, scientific colonialism, research ethics, scientometrics"
 ,
 specs,
 source,The Paleobiology Database
 download url for occurrences,"https://paleobiodb.org/data1.2/occs/list.csv?datainfo&rowcount&interval=Ediacaran,Holocene&show=class,classext,genus,subgenus,coll,coords,loc,paleoloc,strat,stratext,lith,env,ref,crmod,timebins,timecompare"
-download url for references,"https://paleobiodb.org/data1.2/occs/refs.ris?interval=Ediacaran,Holocene&select=occs"
-date_downloaded,19/01/21
+download url for references,"https://paleobiodb.org/data1.2/occs/refs.csv?interval=Ediacaran,Holocene&select=occs&show=formatted,entname"
+date_downloaded,19/01/2021
 data_format,Processed
-data_access,Available to download from OSF
+data_access,Available to download from https://dx.doi.org/10.17605/OSF.IO/6WC7A
 location,Global
-time,1990 – 2020
+time,1990 - 2020
