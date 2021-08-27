@@ -45,7 +45,7 @@
      showgrid="false"
      inkscape:zoom="1.4105307"
      inkscape:cx="201.50817"
-     inkscape:cy="327.6557"
+     inkscape:cy="526.16255"
      inkscape:window-x="-11"
      inkscape:window-y="-11"
      inkscape:window-maximized="1"
@@ -1277,110 +1277,23 @@
   <g
      style="fill:#4c4c4c;fill-opacity:1"
      id="g573"
-     transform="translate(0.53349,-41.46651)">
-    <use
-       xlink:href="#glyph2-8"
-       x="362.53125"
-       y="536.62305"
-       id="use557"
-       width="100%"
-       height="100%" />
-    <use
-       xlink:href="#glyph2-12"
-       x="365.19824"
-       y="536.62305"
-       id="use559"
-       width="100%"
-       height="100%" />
-    <use
-       xlink:href="#glyph2-13"
-       x="373.19434"
-       y="536.62305"
-       id="use561"
-       width="100%"
-       height="100%" />
-    <use
-       xlink:href="#glyph2-14"
-       x="378.53223"
-       y="536.62305"
-       id="use563"
-       width="100%"
-       height="100%" />
-    <use
-       xlink:href="#glyph2-15"
-       x="383.87012"
-       y="536.62305"
-       id="use565"
-       width="100%"
-       height="100%" />
-    <use
-       xlink:href="#glyph2-16"
-       x="387.06641"
-       y="536.62305"
-       id="use567"
-       width="100%"
-       height="100%" />
-    <use
-       xlink:href="#glyph2-17"
-       x="389.19922"
-       y="536.62305"
-       id="use569"
-       width="100%"
-       height="100%" />
-    <use
-       xlink:href="#glyph2-18"
-       x="394.53711"
-       y="536.62305"
-       id="use571"
-       width="100%"
-       height="100%" />
-  </g>
-  <g
-     style="fill:#4c4c4c;fill-opacity:1"
-     id="g587"
-     transform="translate(0.53349,-41.46651)">
-    <use
-       xlink:href="#glyph2-18"
-       x="366.03125"
-       y="546.99023"
-       id="use575"
-       width="100%"
-       height="100%" />
-    <use
-       xlink:href="#glyph2-14"
-       x="368.16406"
-       y="546.99023"
-       id="use577"
-       width="100%"
-       height="100%" />
-    <use
-       xlink:href="#glyph2-19"
-       x="373.50195"
-       y="546.99023"
-       id="use579"
-       width="100%"
-       height="100%" />
-    <use
-       xlink:href="#glyph2-17"
-       x="378.83984"
-       y="546.99023"
-       id="use581"
-       width="100%"
-       height="100%" />
-    <use
-       xlink:href="#glyph2-20"
-       x="384.17773"
-       y="546.99023"
-       id="use583"
-       width="100%"
-       height="100%" />
-    <use
-       xlink:href="#glyph2-21"
-       x="388.97754"
-       y="546.99023"
-       id="use585"
-       width="100%"
-       height="100%" />
+     transform="translate(0.53349,-55.287433)">
+    <text
+       xml:space="preserve"
+       style="font-weight:bold;font-size:10px;line-height:1.25;font-family:Poppins;-inkscape-font-specification:'Poppins Bold';text-align:end;letter-spacing:0px;word-spacing:0px;text-anchor:end;stroke-width:0.75"
+       x="380.13379"
+       y="550.84924"
+       id="text1316"><tspan
+         sodipodi:role="line"
+         id="tspan1314"
+         x="380.13379"
+         y="550.84924"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:10px;font-family:Arial;-inkscape-font-specification:Arial;text-align:center;text-anchor:middle;stroke-width:0.75">Colonial</tspan><tspan
+         sodipodi:role="line"
+         x="380.13379"
+         y="563.60681"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:10px;font-family:Arial;-inkscape-font-specification:Arial;text-align:center;text-anchor:middle;stroke-width:0.75"
+         id="tspan1318">legacy</tspan></text>
   </g>
   <g
      style="fill:#000000;fill-opacity:1"
