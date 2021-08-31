@@ -5,6 +5,10 @@ library(tidyverse)
 load(file.path("data", "refs.RData"))
 unknowns <- read.csv(file.path("data", "unknown.csv"))
 
+all_refs <- all_refs[all_refs$pubyr >= 1990,]
+completed_refs <- completed_refs[completed_refs$reference_no %in% all_refs$reference_no,]
+unknowns <- unknowns[unknowns$reference_no %in% all_refs$reference_no,]
+
 # Number of publications
 length(unique(completed_refs$reference_no))
 length(unique(completed_refs$reference_no)) - 11037

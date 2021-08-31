@@ -21,40 +21,37 @@
 # Load library ------------------------------------------------------------
 library(refer) # v0.0.1
 
-# Download updated pbdb references ----------------------------------------
-
-cats <- c("colls", "occs")
-for(i in cats){
-	url <- sprintf("https://paleobiodb.org/data1.2/occs/refs.csv?interval=Cryogenian,Holocene&select=%s&show=formatted,entname", i)
-	download.file(url, destfile = sprintf("data/references_%s.csv", i))
-}
-
-fnames <- lapply(cats, function(x)sprintf("data/references_%s.csv",x))
-
-dats <- lapply(fnames, function(x) read.csv(x, encoding = "UTF-8"))
-fullrefs <- do.call(rbind, dats)
 
 # Get references used in study --------------------------------------------
-
 load("data/refs.RData")
-refs1990 <- unique(all_refs[all_refs$pubyr > 1990,]$reference_no)
-dat <- completed_refs[completed_refs$reference_no %in% refs1990,]
-refs <- unique(dat$reference_no)
+
+all_refs <- all_refs[all_refs$pubyr >= 1990,]
+completed_refs <- completed_refs[completed_refs$reference_no %in% all_refs$reference_no,]
+refs <- unique(completed_refs$reference_no)
+length(refs)
 
 dir.create("report") #folder for report
 
 # Find and compile missing references -------------------------------------
-missing <- refs[which(!refs %in% fullrefs$reference_no)]
+refer::subset_bib("data/pbdb_refs.bib", refs, "report/references.bib")
+
+#check bib
+bib <- readLines("report/references.bib")
+bib <- bib[grep("^@", bib)]
+bib <- gsub("^@.+ref:([0-9]+),", "\\1", bib)
+
+missing <- refs[which(!refs %in% bib)]
 length(missing)
 missing <- all_refs[all_refs$reference_no %in% missing,]
 
 # Create bib file from missing references
 f <- "data/missing.ris"
+file.remove(f)
 
 # Add header
 xfun::write_utf8('Provider: The Paleobiology Database
 Database: The Paleobiology Database
-Compile: Nussaïbah B. Raja
+Compiled by: Nussaïbah B. Raja
 Content: text/plain; charset="utf-8"', f)
 
 # Template RIS file
@@ -70,8 +67,8 @@ IS  - %s
 SP  - %s
 LA  - %s\nKW  - data")
 
-# Write to file
 
+# Write to file
 for(i in 1:nrow(missing)){
 	temp <- missing[i,]
 	
@@ -92,20 +89,26 @@ for(i in 1:nrow(missing)){
 	write(bib,file=f,append=TRUE)
 }
 
-rbibutils::bibConvert("report/missing.ris", "report/missing.bib", informat="ris", outformat = "bib")
+
+rbibutils::bibConvert(f, "report/missing.bib", informat="ris", outformat = "bib")
 
 system("biber --tool -V report/missing.bib")
 
 file.remove(f)
 file.remove("report/missing.bib.blg")
-file.rename("report/missing_bibertool.bib", f)
-
-refer::subset_bib("data/pbdb_refs.bib", refs, "report/references.bib")
+file.rename("report/missing_bibertool.bib", "report/missing.bib")
 
 # Enterers ----------------------------------------------------------------
+pbdb <- chronosphere::fetch("pbdb")
+pbdb <- pbdb[pbdb$reference_no %in% refs, c("authorizer", "enterer", "modifier")]
 
-enterers <- unique(fullrefs$enterer[fullrefs$reference_no %in% refs])
-enterers
+enterers <- unique(unlist(pbdb))
+enterers <- enterers[enterers != ""]
+
+# order by surname 
+sur <- gsub("^.+\\. ([A-z]+)", "\\1", enterers)
+enterers <- enterers[order(sur)]
+
 xfun::write_utf8(paste(sort(enterers), collapse=", "), "report/enterernames.txt")
 
 # Create report ---------------------------------------------------
