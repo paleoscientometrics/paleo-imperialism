@@ -1,6 +1,27 @@
+## ---------------------------
+##
+## Project: Colonialism in paleontology
+##
+## Purpose of script: Path analysis to identify causal factors
+## leading to research output in paleontology
+##
+## Author: Nussaïbah B. Raja
+## Copyright (c) N. Raja, 2021
+## Email: nussaibah.raja.schoob@fau.de
+##
+## Date Created: 2021-03-13
+## Last Modified: 2021-09-04
+##
+## ---------------------------
+##
+## Notes:
+##   
+##
+## ---------------------------
 library(tidyverse)
 library(countrycode)
 library(piecewiseSEM)
+library(patchwork)
 
 pal <- c("#f0ffe9", "#ffe599", "#bbe487", "#4e9755", "#173109")
 
@@ -72,7 +93,7 @@ mod.hdi
 mod.epi <- lm(epi ~ hdi + gdp + imperialism + gpi, df)
 mod.epi <- step(mod.epi)
 
-# * SEM -------------------------------------------------------------------
+# * CPA -------------------------------------------------------------------
 model.list <- list(mod.fin, mod.hdi, mod.epi)
 
 res <- as.psem(model.list)
@@ -132,15 +153,8 @@ p2 <- ggplot(influence, aes(x=labs, y=estimate, fill=influence)) +
         legend.title = element_text(face=2),
         legend.position = "top")
 
-library(patchwork)
-
 svg(file.path("figs", "Fig_04_model.svg"), width=6, h=8)
 p1 + p2 +
   plot_layout(ncol=1, heights = c(0.8,0.2)) +
   plot_annotation(tag_levels = "a", tag_prefix = "(", tag_suffix = ")")
 dev.off()
-
-
-# Supplement --------------------------------------------------------------
-
-line + scatterplot for all variables
