@@ -28,6 +28,7 @@ pal <- c("#f0ffe9", "#ffe599", "#bbe487", "#4e9755", "#173109")
 # Load data ---------------------------------------------------------------
 load(file.path("data", "refs.RData"))
 pubs <- setNames(data.frame(table(completed_refs$aff_code)), c("code", "npubs"))
+
 imperialism <- read.csv("data/imperialism.csv")
 
 gdp <- read.csv(file.path("data", "2021-02-03_GDP_percapita_WorldBank.csv"), skip=4)
@@ -76,13 +77,46 @@ df <- Reduce(multimerge, list(pubs, gdp, hdi, epi, gpi))
 df$imperialism <- 0
 df$imperialism[df$code %in% imperialism$code] <- 1
 nrow(df)
+
 df <- na.omit(df)
 nrow(df)
-df <- df[df$npubs > 25,]
-df$logpubs <- log(df$npubs)
+
+# Data deficient countries ------------------------------------------------
+dd <- pubs[!pubs$code %in% df$code,]
+dd <- Reduce(multimerge, list(dd, gdp, hdi, epi, gpi))
+dd <- dd[!is.na(dd$npubs),]
+dd <- dd[dd$npubs>25,]
+
+dd$country <- countrycode(dd$code, "iso3c", "country.name") 
+
+dd <- merge(dd, completed_refs[completed_refs$samp_code %in% dd$code,] %>% 
+	group_by(samp_code, aff_country) %>% 
+	tally() %>% 
+	group_by(samp_code) %>% 
+	summarise(t=paste0(aff_country, "(",n, ")", collapse=", ")),
+	by.x="code", by.y="samp_code")
+
+income <- read.csv("data/2019_income_classification_worldbank.csv")
+
+#save data
+write.csv(dd[order(dd$npubs, decreasing=T),c("country", "npubs", "t")], "output/data_deficient.csv",
+		  row.names = F)
+
+# income classification
+dd <- merge(dd, income[,c(1,3)])
+
+dd %>% group_by(classification) %>% 
+	summarise(n=sum(npubs)) %>% 
+	ungroup() %>% 
+	mutate(prop=n/sum(n))
+
 # Models ------------------------------------------------------------------
 
+df$logpubs <- log(df$npubs)
+
 # * Stand-alone -----------------------------------------------------------
+
+
 mod.fin <- lm(logpubs~ hdi + epi + imperialism + gpi, df)
 summary(mod.fin)
 
