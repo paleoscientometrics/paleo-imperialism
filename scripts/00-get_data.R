@@ -1,11 +1,33 @@
+## ---------------------------
+##
+## Project: Colonial history and global economics distortour understanding of deep-time biodiversity
+##
+## Purpose of script: Reshape data to be used for analyses
+##
+## Author: Nussaïbah B. Raja
+## Copyright (c) N. Raja, 2021
+## Email: nussaibah.raja.schoob@fau.de
+##
+## Date Created: 2021-03-13
+## Last Modified: 2021-12-30
+##
+## ---------------------------
+##
+## Notes:
+##   
+##
+## ---------------------------
+
 library(chronosphere)
 library(sp)
 library(spdep)
 library(rworldmap)
 
-# Download data -----------------------------------------------------------
+# Load data -----------------------------------------------------------
 
 pbdb <- chronosphere::fetch("pbdb")
+all_refs <- read.csv("data/PBDB_refs.csv")
+completed_refs <- read.csv("data/aff-data-complete.csv")
 
 # Find countries for those not in there -----------------------------------
 
@@ -50,14 +72,7 @@ pbdb$country[pbdb$cc=="AA"] <- "Antarctica"
 pbdb$country[pbdb$cc=="FA"] <- "Faroe Islands"
 pbdb$country[pbdb$country=="United States Minor Outlying Islands (the)"] <- "United States"
 
-
-# Save data ----------------------------------------------------------------
-
-saveRDS(pbdb[,c("collection_no", "lng", "lat", "reference_no", "country", "cc")], file="data/pbdb.rds")
-
-all_refs <- read.csv("https://raw.githubusercontent.com/paleoscientometrics/paleo-aff-initiative/main/data_archive/PBDB_refs.csv")
-
-completed_refs <- read.csv("https://raw.githubusercontent.com/paleoscientometrics/paleo-aff-initiative/main/data_archive/aff-data-complete.csv")
+# Make corrections to mistakes --------------------------------------------
 
 completed_refs$aff_country <- plyr::mapvalues(completed_refs$aff_country, 
 											  c("Brasil", "Chi", "Columbia", "Denkmark", "ISA", "Morroco", "Northern Ireland", "Phillipines", "Yemen Arab Republic", "Pland", "Rondebosch"),
@@ -65,11 +80,13 @@ completed_refs$aff_country <- plyr::mapvalues(completed_refs$aff_country,
 
 completed_refs$aff_country[completed_refs$reference_no=="74387"] <- c("Argentina", "Peru","France")
 
-
 temp <- completed_refs
 temp <- temp[!temp$samp_country %in% c("", "ODP Site"),]
 n <- grep("Cura.+", temp$samp_country)
 temp$samp_country[n] <- "Curacao"
+
+
+# Recode country to ISO3 --------------------------------------------------
 
 temp$samp_code <- countrycode::countrycode(temp$samp_country, origin="country.name", destination="iso3c")
 temp$aff_code <- countrycode::countrycode(temp$aff_country, origin="country.name", destination="iso3c")
@@ -79,4 +96,7 @@ temp$samp_country <- countrycode::countrycode(temp$samp_code, origin = "iso3c", 
 
 completed_refs <- temp
 
+# Save data ---------------------------------------------------------------
+
+saveRDS(pbdb[,c("collection_no", "lng", "lat", "reference_no", "country", "cc")], file="data/pbdb.rds")
 save(all_refs, completed_refs, file="data/refs.RData")
