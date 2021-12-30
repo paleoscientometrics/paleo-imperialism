@@ -138,7 +138,7 @@ coefs_res <-coefs(res)
 
 # Plot --------------------------------------------------------------------
 coords <- data.frame(name=c("logpubs", "imperialism", "hdi", "gdp", "gpi", "epi"),
-					 labels =c("Research output\n in paleontology", "Imperial\nlegacy", 
+					 labels =c("Research output\n in palaeontology", "Colonial\nlegacy", 
 					 		  "HDI", "GDP", "GPI", "EPI"),
 					 x=c(2, 3,1,1,1.5, 2),
 					 y=c(1,2,2,3,3, 2))
