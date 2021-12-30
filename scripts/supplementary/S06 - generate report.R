@@ -1,6 +1,6 @@
 ## ---------------------------
 ##
-## Project: Colonialism in paleontology
+## Project: Colonial history and global economics distort our understanding of deep-time biodiversity
 ##
 ## Purpose of script: Create a document to list all references used in the study
 ##
@@ -19,7 +19,7 @@
 ## ---------------------------
 
 # Load library ------------------------------------------------------------
-library(refer) # v0.0.1
+library(refer) # v0.0.1 
 
 
 # Get references used in study --------------------------------------------

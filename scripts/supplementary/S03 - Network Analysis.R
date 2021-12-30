@@ -1,3 +1,23 @@
+## ---------------------------
+##
+## Project: Colonial history and global economics distort our understanding of deep-time biodiversity
+##
+## Purpose of script: Network analysis for various regions
+##
+## Author: Nussaïbah B. Raja
+## Copyright (c) N. Raja, 2021
+## Email: nussaibah.raja.schoob@fau.de
+##
+## Date Created: 2021-03-13
+## Last Modified: 2021-12-30
+##
+## ---------------------------
+##
+## Notes:
+##   
+##
+## ---------------------------
+
 library(tidyverse)
 library(igraph)
 library(countrycode)
@@ -46,6 +66,7 @@ df$aff_continent <- countrycode::countryname(df$aff_country, destination="contin
 
 # each region gets an id
 regions <- unique(c(df$samp_region, df$aff_region))
+regions <- regions[!is.na(regions)]
 regions <- data.frame(id=1:length(regions),
 					  label=regions)
 
@@ -80,7 +101,6 @@ for (reg in c("Asia", "Europe", "South America", "Africa")){
 	
 	#check
 	#plot(g)
-	
 	clrs <- V(g)$name
 	
 	clrs[grep("Africa", clrs)] <- palv["Africa"]
@@ -105,7 +125,6 @@ for (reg in c("Asia", "Europe", "South America", "Africa")){
 	E(g)$edge.color <- "gray80"
 	
 	V(g)$frame.color <- "white"
-	
 	
 	plot(g, 
 		 layout=layout_with_gem, edge.curved=.1,

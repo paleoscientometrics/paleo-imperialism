@@ -1,3 +1,23 @@
+## ---------------------------
+##
+## Project: Colonial history and global economics distort our understanding of deep-time biodiversity
+##
+## Purpose of script: Diversity over time 
+##
+## Author: Nussaïbah B. Raja
+## Copyright (c) N. Raja, 2021
+## Email: nussaibah.raja.schoob@fau.de
+##
+## Date Created: 2021-03-13
+## Last Modified: 2021-12-30
+##
+## ---------------------------
+##
+## Notes: Not used in final analyses.
+##   
+##
+## ---------------------------
+
 library(chronosphere)
 library(countrycode)
 library(divDyn)

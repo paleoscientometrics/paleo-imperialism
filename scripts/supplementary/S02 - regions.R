@@ -1,6 +1,23 @@
+## ---------------------------
+##
+## Project: Colonial history and global economics distortour understanding of deep-time biodiversity
+##
+## Purpose of script: Create a region list
+##
+## Author: Nussaïbah B. Raja
+## Copyright (c) N. Raja, 2021
+## Email: nussaibah.raja.schoob@fau.de
+##
+## Date Created: 2021-03-13
+## Last Modified: 2021-12-30
+##
+## ---------------------------
+##
+## Notes:
+##   
+##
+## ---------------------------V
 library(countrycode)
-
-View(codelist)
 
 regions <- na.omit(unique(codelist_panel[,c("continent", "region23")]))
 regions$countries <- NA

@@ -1,3 +1,23 @@
+## ---------------------------
+##
+## Project: Colonial history and global economics distortour understanding of deep-time biodiversity
+##
+## Purpose of script: Popular taxa for research per country
+##
+## Author: Nussaïbah B. Raja
+## Copyright (c) N. Raja, 2021
+## Email: nussaibah.raja.schoob@fau.de
+##
+## Date Created: 2021-03-13
+## Last Modified: 2021-12-30
+##
+## ---------------------------
+##
+## Notes:
+##   
+##
+## ---------------------------
+
 library(tidyverse)
 library(igraph)
 library(countrycode)
