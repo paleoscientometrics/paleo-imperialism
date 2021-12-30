@@ -1,6 +1,6 @@
 ## ---------------------------
 ##
-## Project: Colonial history and global economics distortour understanding of deep-time biodiversity
+## Project: Colonial history and global economics distort our understanding of deep-time biodiversity
 ##
 ## Purpose of script: Reshape data to be used for analyses
 ##
