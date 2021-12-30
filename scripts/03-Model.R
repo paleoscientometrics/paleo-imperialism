@@ -1,6 +1,6 @@
 ## ---------------------------
 ##
-## Project: Colonialism in paleontology
+## Project: Colonial history and global economics distortour understanding of deep-time biodiversity
 ##
 ## Purpose of script: Path analysis to identify causal factors
 ## leading to research output in paleontology
@@ -10,7 +10,7 @@
 ## Email: nussaibah.raja.schoob@fau.de
 ##
 ## Date Created: 2021-03-13
-## Last Modified: 2021-09-04
+## Last Modified: 2021-12-30
 ##
 ## ---------------------------
 ##
