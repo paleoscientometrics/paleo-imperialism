@@ -30,7 +30,7 @@ Evolution.https://doi.org/10.1038/s41559-021-01608-8
 
 ## Requirements
 
-This code was developed in `R 4.0.0`. It is therefore recommended to use
+This code was developed in `R 4.1.1`. It is therefore recommended to use
 the same or any more up-to-date version of R for reproducing the
 analyses in this study.
 
