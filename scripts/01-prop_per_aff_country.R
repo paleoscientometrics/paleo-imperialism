@@ -1,27 +1,49 @@
+## ---------------------------
+##
+## Project: Colonial history and global economics distortour understanding of deep-time biodiversity
+##
+## Purpose of script: Calculate contributions per country
+##
+## Author: Nussaïbah B. Raja
+## Copyright (c) N. Raja, 2021
+## Email: nussaibah.raja.schoob@fau.de
+##
+## Date Created: 2021-03-13
+## Last Modified: 2021-12-30
+##
+## ---------------------------
+##
+## Notes:
+##   
+##
+## ---------------------------
 library(tidyverse)
 library(igraph)
 library(countrycode)
 library(ggthemes)
 library(patchwork)
 
+
+# Set theme and colour scheme ---------------------------------------------
+
 pal <- c("#f0ffe9", "#ffe599", "#bbe487", "#4e9755", "#173109")
 
-theme_set(theme_hc() %+replace% 
-		  	theme(axis.title = element_text(face="bold"),
-		  		  legend.title = element_text(face="bold"))
-		  )
+theme_set(theme_hc())
+theme_replace(
+	theme(axis.title = element_text(face="bold"),
+		  legend.title = element_text(face="bold"))
+)
 
 # Load data ---------------------------------------------------------------
 load(file.path("data", "refs.RData"))
 pbdb <- readRDS(file.path("data", "pbdb.rds"))
-refs1990 <- all_refs[all_refs$pubyr > 1990,]$reference_no %>% unique()
+refs1990 <- all_refs[all_refs$pubyr > 1990,]$reference_no %>% unique() #restrict to 1990
 
 dat <- completed_refs[completed_refs$reference_no %in% refs1990,]
 
 dat <- dat[!is.na(dat$samp_code),]
 
 dat <- merge(dat, pbdb[,c("reference_no", "collection_no")], all.x=TRUE, all.y=FALSE)
-
 
 # Grip map: collections sampled per country -------------------------------
 
