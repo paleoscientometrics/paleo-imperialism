@@ -1,8 +1,29 @@
+## ---------------------------
+##
+## Project: Colonial history and global economics distortour understanding of deep-time biodiversity
+##
+## Purpose of script: Analysis of relationships between countries & parachute index
+##
+## Author: Nussaïbah B. Raja
+## Copyright (c) N. Raja, 2021
+## Email: nussaibah.raja.schoob@fau.de
+##
+## Date Created: 2021-12-30
+## Last Modified:
+##
+## ---------------------------
+##
+## Notes:
+##   
+##
+## ---------------------------
 library(tidyverse)
 library(igraph)
 library(countrycode)
 library(ggplot2)
 library(patchwork)
+
+# Set colour scheme -------------------------------------------------------
 
 pal <- c("#f0ffe9", "#ffe599", "#bbe487", "#4e9755", "#173109")
 
@@ -75,6 +96,9 @@ df2 <- df2 %>%  group_by(label, region) %>%
 
 df2 <- df2[order(df2$region, df2$weight, decreasing = T),]
 regs <- unique(df2$region)
+regs <- regs[!regs %in% c("French Southern Territories", "Antarctica")]
+
+df2 <- df2[df2$region %in% regs,]
 
 df2$y <- 0
 df2$x <- 0
@@ -150,10 +174,10 @@ p1 <- ggplot() + geom_curve(data=na.omit(edges2[edges2$x2 > edges2$x1,]),
 						  range=c(1,15)) +
 	scale_color_manual(values=c("Other"="#e5e5e560", 
 								palv)) +
-	scale_alpha_continuous(breaks=c(0, 50,100,200,500, 1000,2000, 9999), 
+	scale_alpha_continuous(breaks=c(0, 50,500,9999), 
 								range=c(0.3,1)) +
-	guides(alpha="none") +
-	labs(col="Region", size="Number of \noutgoing nodes")
+	guides(alpha="none", col="none") +
+	labs(size="Number of \noutgoing nodes")
 
 top15 <- sort(tapply(edges2$weight, edges2$samp_country, sum), decreasing = T)[1:25]
 top15 <- top15[!names(top15) %in% df2$label[order(df2$weight, decreasing = T)][1:25]]
@@ -163,8 +187,10 @@ top15$label <- gsub(" ", "\n", top15$label)
 
 p2 <- p1 + theme_void() +
 	geom_text(data=top15, aes(x=x, y=y, label=label), size=3, hjust=1,
-					vjust=0)
-ggsave(file.path("figs", "Fig_02_network_global.svg"), p2, width=15, h=10)
+					vjust=0) +
+	theme(legend.position="bottom")
+
+ggsave(file.path("figs", "Fig_02_network_global.svg"), p2, width=180, h=225, units="mm")
 
 # Igraph: statistics ------------------------------------------------------
 gr <- df[,c("aff_code", "samp_code")]
@@ -203,7 +229,7 @@ p3 + p4 + plot_annotation(tag_levels = "a", tag_prefix = "(", tag_suffix = ")") 
 	theme(plot.tag = element_text(size = 10))
 dev.off()
 
-# Parachute science -------------------------------------------------------
+# Parachute index -------------------------------------------------------
 df3 <- df
 df3 <- df3[!df3$samp_country == "Antarctica",]
 
@@ -297,7 +323,7 @@ p2 <- ggplot(bottom10, aes(x=reorder(country, -index), y=index)) +
 		  legend.title = element_text(face="bold"))
 
 svg(file.path("figs", "Fig_03_parachute_index.svg"), 
-	height=8, width=7)
+	height=10, width=7)
 p1 + p2 + plot_layout(ncol=1, heights=c(0.55, 0.25)) +
 	plot_annotation(tag_levels = "a", tag_prefix = "(", tag_suffix = ")") & 
 	theme(plot.tag = element_text(size = 10))
