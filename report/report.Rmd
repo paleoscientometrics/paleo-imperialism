@@ -5,7 +5,7 @@ corresauth: '*Corresponding author, email: nussaibah.raja.schoob@fau.de'
 abstract: |
   This document contains the references for the data sources used in the study:
   
-  Raja, N. B., Dunne, E. M., Matiwane, A., Khan, T. M., Nätscher, P. S., Ghilardi, A. M., and Chattopadhyay, D. (2021). Colonial history and global economics distort our understanding of deep-time biodiversity. EarthArxiv. https://doi.org/10.31223/X5802N
+  Raja, N. B., Dunne, E. M., Matiwane, A., Khan, T. M., Nätscher, P. S., Ghilardi, A. M., and Chattopadhyay, D. (2021). Colonial history and global economics distort our understanding of deep-time biodiversity. Nature Ecology & Evolution. https://doi.org/10.1038/s41559-021-01608-8
   
 keywords: paleontology, biodiversity, sampling biases, scientific colonialism, research ethics, scientometrics
 author:
