@@ -77,7 +77,7 @@ p1 <- ggplot(worldtilegrid, aes(xmin = x, ymin = y, xmax = x + 1, ymax = y + 1))
 			  nudge_x = 0.5, nudge_y = -0.5, size = 3) +	
 	scale_color_manual(values=c(pal[4], pal[1]))+
 	scale_y_reverse() +
-	guides(color=FALSE)+
+	guides(color="none")+
 	coord_equal()+
 	theme_map
 
